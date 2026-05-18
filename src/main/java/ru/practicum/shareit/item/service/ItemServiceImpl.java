@@ -68,7 +68,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemResponse update(Long userId, Long itemId, ItemRequest request) throws Exception {
+    public ItemResponse update(Long userId, Long itemId, ItemRequest request) {
 
         if (!isOwner(userId, itemId)) {
             throw new AccessException();

@@ -17,7 +17,7 @@ public interface ItemService {
 
     ItemResponse save(Long userId, ItemRequest request);
 
-    ItemResponse update(Long userId, Long itemId, ItemRequest request) throws Exception;
+    ItemResponse update(Long userId, Long itemId, ItemRequest request);
 
     void delete(Long userId, Long itemId);
 }

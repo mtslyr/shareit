@@ -9,13 +9,13 @@ public interface ItemRepository {
 
     List<Item> findAll();
 
-    List<Item> findByUserId(long userId);
+    List<Item> findByUserId(Long userId);
 
-    Item findById(long itemId);
+    Item findById(Long itemId);
 
     Item update(Long itemId, ItemRequest request);
 
     Item save(Item request);
 
-    void delete(long itemId);
+    void delete(Long itemId);
 }

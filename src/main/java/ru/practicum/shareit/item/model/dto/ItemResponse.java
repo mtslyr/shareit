@@ -4,9 +4,9 @@ import lombok.Data;
 
 @Data
 public class ItemResponse {
-    Long id;
-    String name;
-    String description;
-    Boolean available;
-    Integer shareCount;
+    private Long id;
+    private String name;
+    private String description;
+    private Boolean available;
+    private Integer shareCount;
 }

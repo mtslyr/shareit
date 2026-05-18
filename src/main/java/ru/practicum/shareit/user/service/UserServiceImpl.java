@@ -38,7 +38,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponse update(Long userId, UserRequest request) throws Exception {
+    public UserResponse update(Long userId, UserRequest request) {
         validateUserEmail(request);
         return mapper.toResponse(
                 userRepository.update(userId, request));

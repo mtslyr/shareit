@@ -1,65 +1,77 @@
 package ru.practicum.shareit.item.repository;
 
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import org.springframework.stereotype.Repository;
-import ru.practicum.shareit.common.util.UpdateUtil;
 import ru.practicum.shareit.item.exception.ItemNotFoundException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.model.dto.ItemRequest;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Repository
 @RequiredArgsConstructor
 public class InMemoryItemStorage implements ItemRepository {
-
-    private final UpdateUtil<Item, ItemRequest> updateUtil;
-    private static final List<Item> items = new ArrayList<>();
+    private static final Map<Long, Item> items = new HashMap<>();
     private static final AtomicLong index = new AtomicLong(0);
 
-    private static long nextId() {
+    private static Long nextId() {
         return index.getAndIncrement();
     }
 
     @Override
     public List<Item> findAll() {
-        return List.copyOf(items);
+        return List.copyOf(items.values());
     }
 
     @Override
-    public List<Item> findByUserId(long userId) {
-        return items.stream()
+    public List<Item> findByUserId(Long userId) {
+        return items.values().stream()
                 .filter(i -> i.getUserId().equals(userId))
                 .toList();
     }
 
     @Override
-    public Item findById(long itemId) {
-        return items.stream()
-                .filter(u -> u.getId().equals(itemId))
-                .findFirst()
-                .orElseThrow(() -> new ItemNotFoundException(itemId));
+    public Item findById(Long itemId) {
+        Item i = items.get(itemId);
+        
+        if (i == null) {
+            throw new ItemNotFoundException(itemId);
+        }
+        
+        return i;
     }
 
     @Override
-    @SneakyThrows
     public Item update(Long itemId, ItemRequest request) {
         Item item = findById(itemId);
-        return updateUtil.update(item, request);
+
+        if (request.getName() != null) {
+            item.setName(request.getName());
+        }
+
+        if (request.getAvailable() != null) {
+            item.setAvailable(request.getAvailable());
+        }
+
+        if (request.getDescription() != null) {
+            item.setDescription(request.getDescription());
+        }
+
+        return item;
     }
 
     @Override
     public Item save(Item request) {
         request.setId(nextId());
-        items.add(request);
+        items.put(request.getId(), request);
         return request;
     }
 
     @Override
-    public void delete(long itemId) {
-        items.removeIf(i -> i.getId().equals(itemId));
+    public void delete(Long itemId) {
+        items.remove(itemId);
     }
 }

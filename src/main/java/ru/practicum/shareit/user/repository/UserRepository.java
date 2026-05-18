@@ -16,7 +16,7 @@ public interface UserRepository {
 
     void delete(Long userId);
 
-    User update(Long userId, UserRequest request) throws Exception;
+    User update(Long userId, UserRequest request);
 
     Optional<User> findUserByEmail(String email);
 }

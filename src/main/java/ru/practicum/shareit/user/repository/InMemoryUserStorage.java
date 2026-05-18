@@ -2,13 +2,13 @@ package ru.practicum.shareit.user.repository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import ru.practicum.shareit.common.util.UpdateUtil;
 import ru.practicum.shareit.user.exception.UserNotFoundException;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.model.dto.UserRequest;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -17,8 +17,7 @@ import static ru.practicum.shareit.user.exception.UserNotFoundException.Criteria
 @Repository
 @RequiredArgsConstructor
 public class InMemoryUserStorage implements UserRepository {
-    private final UpdateUtil<User, UserRequest> updateUtil;
-    private static final List<User> users = new ArrayList<>();
+    private static final Map<Long, User> users = new HashMap<>();
     private static final AtomicLong index = new AtomicLong(0);
 
     private static long nextId() {
@@ -27,42 +26,54 @@ public class InMemoryUserStorage implements UserRepository {
 
     @Override
     public List<User> findAll() {
-        return List.copyOf(users);
+        return List.copyOf(users.values());
     }
 
     @Override
     public User finById(Long userId) {
-        return users.stream()
-                .filter(u -> u.getId().equals(userId))
-                .findFirst()
-                .orElseThrow(() -> new UserNotFoundException(ID, userId.toString()));
+        User u = users.get(userId);
+
+        if (u == null) {
+            throw new UserNotFoundException(ID, userId.toString());
+        }
+
+        return u;
     }
 
     @Override
     public User save(User request) {
         request.setId(nextId());
-        users.add(request);
+        users.put(request.getId(), request);
         return request;
     }
 
     @Override
     public void delete(Long userId) {
-        boolean removed = users.removeIf(u -> u.getId().equals(userId));
-
-        if (!removed) {
+        if (!users.containsKey(userId)) {
             throw new UserNotFoundException(ID, userId.toString());
         }
+
+        users.remove(userId);
     }
 
     @Override
-    public User update(Long userId, UserRequest request) throws Exception {
+    public User update(Long userId, UserRequest request) {
         User user = finById(userId);
-        return updateUtil.update(user, request);
+
+        if (request.getEmail() != null) {
+            user.setEmail(request.getEmail());
+        }
+
+        if (request.getName() != null) {
+            user.setName(request.getName());
+        }
+
+        return user;
     }
 
     @Override
     public Optional<User> findUserByEmail(String email) {
-        return users.stream()
+        return users.values().stream()
                 .filter(u -> u.getEmail().equals(email))
                 .findFirst();
     }

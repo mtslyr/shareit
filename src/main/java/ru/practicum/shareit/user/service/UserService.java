@@ -13,7 +13,7 @@ public interface UserService {
 
     UserResponse save(UserRequest request);
 
-    UserResponse update(Long userId, UserRequest request) throws Exception;
+    UserResponse update(Long userId, UserRequest request);
 
     void delete(Long userId);
 }

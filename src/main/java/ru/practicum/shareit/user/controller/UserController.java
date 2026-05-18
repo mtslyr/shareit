@@ -38,13 +38,13 @@ public class UserController {
     @PatchMapping("/{id}")
     public UserResponse patchUser(
             @PathVariable("id") long userId,
-            @RequestBody @Validated(OnUpdate.class) UserRequest request) throws Exception {
+            @RequestBody @Validated(OnUpdate.class) UserRequest request) {
         return userService.update(userId,request);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteUser(@PathVariable("id") long userId) {
+    public void deleteUser(@PathVariable("id") Long userId) {
         userService.delete(userId);
     }
 

@@ -49,7 +49,7 @@ public class ItemController {
     public ItemResponse patchItem(
             @PathVariable("id") Long itemId,
             @RequestHeader(value = X_SHARER_USER_ID) Long userId,
-            @RequestBody @Validated(OnUpdate.class) ItemRequest request) throws Exception {
+            @RequestBody @Validated(OnUpdate.class) ItemRequest request) {
         return itemService.update(userId, itemId, request);
     }
 

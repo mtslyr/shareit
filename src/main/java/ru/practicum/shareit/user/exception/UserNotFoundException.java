@@ -1,11 +1,10 @@
 package ru.practicum.shareit.user.exception;
 
-import org.springframework.http.HttpStatus;
-import ru.practicum.shareit.common.exception.ApiException;
+import ru.practicum.shareit.common.exception.NotFoundException;
 
-public class UserNotFoundException extends ApiException {
+public class UserNotFoundException extends NotFoundException {
     public UserNotFoundException(CriteriaField field, String value) {
-        super("Пользователь с %s = %s не найден.".formatted(field.name(), value), HttpStatus.NOT_FOUND);
+        super("Пользователь с %s = %s не найден.".formatted(field.name(), value));
     }
 
     public enum CriteriaField {
