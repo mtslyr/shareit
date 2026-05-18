@@ -36,11 +36,11 @@ public class InMemoryItemStorage implements ItemRepository {
     @Override
     public Item findById(Long itemId) {
         Item i = items.get(itemId);
-        
+
         if (i == null) {
             throw new ItemNotFoundException(itemId);
         }
-        
+
         return i;
     }
 
