@@ -65,6 +65,7 @@ public class CommentServiceImpl implements CommentService {
         LocalDateTime now = Instant.now()
                 .atZone(ZoneId.systemDefault())
                 .toLocalDateTime();
+
         LocalDateTime bookingEndDate = booking.getEndDate()
                 .atZone(ZoneOffset.UTC)
                 .toLocalDateTime();

@@ -22,7 +22,6 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserStorage;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
