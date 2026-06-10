@@ -67,7 +67,7 @@ public interface BookingStorage extends JpaRepository<Booking, Long> {
     SELECT
         it.item_id AS itemId,
         MIN(CASE WHEN b.start_date >= NOW() THEN b.start_date END) AS nextBookingStart,
-        MAX(CASE WHEN b.end_date < (NOW() - INTERVAL '10' SECOND) THEN b.end_date END) AS lastBookingEnd 
+        MAX(CASE WHEN b.end_date < (NOW() - INTERVAL '10' SECOND) THEN b.end_date END) AS lastBookingEnd
     FROM items it
     LEFT JOIN bookings b ON it.item_id = b.item_id
     WHERE it.user_id = ?1
@@ -79,7 +79,7 @@ public interface BookingStorage extends JpaRepository<Booking, Long> {
             SELECT
                 it.item_id AS itemId,
                 MIN(CASE WHEN b.start_date >= NOW() THEN b.start_date END) AS nextBookingStart,
-                MAX(CASE WHEN b.end_date < (NOW() - INTERVAL '10' SECOND) THEN b.end_date END) AS lastBookingEnd 
+                MAX(CASE WHEN b.end_date < (NOW() - INTERVAL '10' SECOND) THEN b.end_date END) AS lastBookingEnd
             FROM items it
             LEFT JOIN bookings b ON it.item_id = b.item_id
             WHERE it.item_id = ?1
