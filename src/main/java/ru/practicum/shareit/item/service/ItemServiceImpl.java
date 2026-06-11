@@ -65,6 +65,14 @@ public class ItemServiceImpl implements ItemService {
                         Function.identity()
                 ));
 
+        Map<Long,List<CommentResponse>> itemsComments = commentStorage
+                .findByItemIdIn(userItems.keySet())
+                .stream()
+                .collect(Collectors.groupingBy(
+                        comment -> comment.getItem().getId(),
+                        Collectors.mapping(commentMapper::toResponse, Collectors.toList())
+                ));
+
         bookingStorage.findAllByItemsWithBookingDates(userId)
                 .forEach(projection -> {
                     ItemWithBookingDates item = userItems.get(projection.getItemId());
@@ -72,7 +80,10 @@ public class ItemServiceImpl implements ItemService {
                     if (item != null) {
                         item.setNextBooking(projection.getNextBookingStart());
                         item.setLastBooking(projection.getLastBookingEnd());
-                        item.setComments(getCommentsForItem(projection.getItemId()));
+                        item.setComments(itemsComments.getOrDefault(
+                                projection.getItemId(),
+                                List.of()
+                        ));
                     }
                 });
 

@@ -22,6 +22,9 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserStorage;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.List;
 
 @Service
@@ -93,10 +96,30 @@ public class BookingServiceImpl implements BookingService {
     public BookingResponse create(Long userId, BookingRequest request) {
         validateUserExists(userId);
 
+        User booker = userStorage.findById(userId)
+                        .orElseThrow(() ->
+                                new UserNotFoundException(
+                                        UserNotFoundException.CriteriaField.ID,
+                                        userId.toString()));
+
         Item item = itemStorage.findById(request.getItemId())
                 .orElseThrow(() -> new ItemNotFoundException(request.getItemId()));
 
-        if (request.getStartDate().equals(request.getEndDate())) {
+        LocalDateTime requestStart = request.getStartDate()
+                .atZone(ZoneOffset.UTC)
+                .toLocalDateTime();
+
+        LocalDateTime requestEnd = request.getEndDate()
+                .atZone(ZoneOffset.UTC)
+                .toLocalDateTime();
+
+        LocalDateTime now = Instant.now()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime();
+
+        if (requestStart.equals(requestEnd)
+            || requestEnd.isBefore(requestStart)
+            || (requestStart.isBefore(now) && requestEnd.isBefore(now))) {
             throw new InvalidBookingPeriodException();
         }
 
@@ -111,12 +134,7 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = mapper.toBooking(request);
         booking.setCreatedAt(Instant.now());
         booking.setStatus(Booking.Status.WAITING);
-        booking.setBooker(
-                userStorage.findById(userId)
-                        .orElseThrow(() -> new UserNotFoundException(
-                                UserNotFoundException.CriteriaField.ID,
-                                userId.toString()))
-        );
+        booking.setBooker(booker);
         booking.setItem(item);
 
         Booking saved = bookingStorage.save(booking);
@@ -176,12 +194,13 @@ public class BookingServiceImpl implements BookingService {
             throw new AccessException();
         }
 
-        if (approved) {
-            booking.setStatus(Booking.Status.APPROVED);
-        } else {
-            booking.setStatus(Booking.Status.REJECTED);
+        Booking.Status targetStatus = approved ? Booking.Status.APPROVED : Booking.Status.REJECTED;
+
+        if (booking.getStatus().equals(targetStatus)) {
+            return mapper.toResponse(booking);
         }
 
+        booking.setStatus(targetStatus);
         Booking saved = bookingStorage.save(booking);
 
         return mapper.toResponse(saved);
