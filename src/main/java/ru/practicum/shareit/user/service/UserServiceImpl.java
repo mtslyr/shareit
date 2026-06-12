@@ -3,10 +3,12 @@ package ru.practicum.shareit.user.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.user.exception.EmailAlreadyUsedException;
+import ru.practicum.shareit.user.exception.UserNotFoundException;
+import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.model.UserMapper;
 import ru.practicum.shareit.user.model.dto.UserRequest;
 import ru.practicum.shareit.user.model.dto.UserResponse;
-import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.user.repository.UserStorage;
 
 import java.util.List;
 
@@ -14,7 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    private final UserRepository userRepository;
+    private final UserStorage userRepository;
     private final UserMapper mapper;
 
     @Override
@@ -27,7 +29,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse getUserById(Long userId) {
-        return mapper.toResponse(userRepository.finById(userId));
+        return mapper.toResponse(userRepository.findById(userId)
+                .orElseThrow(() ->
+                        new UserNotFoundException(
+                                UserNotFoundException.CriteriaField.ID,
+                                userId.toString())));
     }
 
     @Override
@@ -40,18 +46,36 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse update(Long userId, UserRequest request) {
         validateUserEmail(request);
+        User u = userRepository.findById(userId)
+                .orElseThrow(() ->
+                        new UserNotFoundException(
+                                UserNotFoundException.CriteriaField.ID,
+                                userId.toString()));
+
+
+        patchUser(u, request);
         return mapper.toResponse(
-                userRepository.update(userId, request));
+                userRepository.save(u));
     }
 
     @Override
     public void delete(Long userId) {
-        userRepository.delete(userId);
+        userRepository.deleteById(userId);
     }
 
     public void validateUserEmail(UserRequest request) {
-        if (userRepository.findUserByEmail(request.getEmail()).isPresent()) {
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new EmailAlreadyUsedException(request.getEmail());
+        }
+    }
+
+    private void patchUser(User user, UserRequest request) {
+        if (request.getName() != null) {
+            user.setName(request.getName());
+        }
+
+        if (request.getEmail() != null) {
+            user.setEmail(request.getEmail());
         }
     }
 }
